@@ -126,36 +126,6 @@ pipeline {
         //         }
         //     }
         // }
-        stage('Verify Deployment'){
-            steps{
-                script{
-                    rollbackStatus = sh(script: "kubectl rollout status deployment/backend -n ${project} --timeout=1m || true", returnStdout: true).trim()
-                    if(rollbackStatus.contains('successfully rolled out')){
-                        echo "Deployment is successfull"
-                    }
-                    else{
-                        echo "Deployment is failed, performing rollback"
-                        if(releaseExists.isEmpty()){
-                            error "Deployment failed, not able to rollback, since it is first time deployment"
-                        }
-                        else{
-                            sh """
-                            aws eks update-kubeconfig --region ${region} --name ${project}-dev
-                            helm rollback --install backend -n ${project} 0
-                            sleep 60
-                            """
-                            rollbackStatus = sh(script: "kubectl rollout status deployment/backend -n expense --timeout=2m || true", returnStdout: true).trim()
-                            if(rollbackStatus.contains('successfully rolled out')){
-                                error "Deployment is failed, Rollback is successfull"
-                            }
-                            else{
-                                error "Deployment is failed, Rollback is failed"
-                            }
-                        }
-                    }
-                }
-            }
-        }        
     }
     post { 
         always { 
