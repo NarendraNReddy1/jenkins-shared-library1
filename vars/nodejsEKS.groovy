@@ -141,7 +141,7 @@ pipeline {
                         else{
                             sh """
                             aws eks update-kubeconfig --region ${region} --name ${project}-dev
-                            helm rollback --install backend -n ${project} 0
+                            helm rollback backend -n ${project} 0
                             sleep 60
                             """
                             rollbackStatus = sh(script: "kubectl rollout status deployment/backend -n expense --timeout=2m || true", returnStdout: true).trim()
